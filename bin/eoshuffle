@@ -7,7 +7,7 @@ const cmdDir = path.join (srcDir, 'cmds');
 
 require ('yargs')
   // global options
-  .option ('directory', {
+  .option ('directory', { // this is where the path that you pass in is stored
     type: 'string',
     desc: 'project directory',
     alias: 'd',

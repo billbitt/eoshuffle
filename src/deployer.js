@@ -52,7 +52,7 @@ module.exports = async function (opts = {}) {
     });
   };
 
-  const compileAbi = async dir => {
+  const compileAbi = async (dir, eosiocpp) => {
     const pathName = path.basename (dir);
     const inputDir = path.join (dirs.contractDir, pathName);
     const inputFile = path.join (inputDir, `${pathName}.cpp`);
@@ -60,10 +60,25 @@ module.exports = async function (opts = {}) {
     const outputFile = path.join (outputDir, `${pathName}.abi`);
 
     fs.mkdirpSync (outputDir);
-    const abiCommand = `eosiocpp -g ${outputFile} ${inputFile}`;
+    const abiCommand = `${eosiocpp} -g ${outputFile} ${inputFile}`;
+    console.log('abiCommand:', abiCommand);
     return _compileContract (abiCommand, dir);
   };
-  const compileWast = async dir => {
+
+  // const compileWast = async (dir, eosiocpp) => {
+  //   const pathName = path.basename (dir);
+  //   const inputDir = path.join (dirs.contractDir, pathName);
+  //   const inputFile = path.join (inputDir, `${pathName}.cpp`);
+  //   const outputDir = path.join (dirs.buildDir, pathName);
+  //   const outputFile = path.join (outputDir, `${pathName}.wast`);
+  //   fs.mkdirpSync (outputDir);
+  //
+  //   const wastCmd = `${eosiocpp} -o ${outputFile} ${inputFile}`;
+  //   console.log('wastCmd:', wastCmd);
+  //   return _compileContract (wastCmd, dir);
+  // };
+
+  const compileWast = async (dir, eosiocpp) => {
     const pathName = path.basename (dir);
     const inputDir = path.join (dirs.contractDir, pathName);
     const inputFile = path.join (inputDir, `${pathName}.cpp`);
@@ -71,12 +86,14 @@ module.exports = async function (opts = {}) {
     const outputFile = path.join (outputDir, `${pathName}.wast`);
     fs.mkdirpSync (outputDir);
 
-    const wastCmd = `eosiocpp -o ${outputFile} ${inputFile}`;
+    const wastCmd = `${eosiocpp} -o ${outputFile} ${inputFile}`;
+    console.log('wastCmd:', wastCmd);
     return _compileContract (wastCmd, dir);
   };
 
   this.compile = async dir => {
     const eosiocpp = opts.eosiocpp || shelljs.which ('eosiocpp');
+    console.log('eosiocpp ===', eosiocpp);
     if (!eosiocpp) {
       logger.info (
         `Sorry, this script requires eosiocpp. Either pass it as an option using the flag or add it to your $PATH and try again.`
@@ -85,8 +102,8 @@ module.exports = async function (opts = {}) {
       reject ();
     }
 
-    await compileWast (dir);
-    await compileAbi (dir);
+    await compileWast (dir, eosiocpp);
+    await compileAbi (dir, eosiocpp);
     logger.info ('Complete');
   };
 
