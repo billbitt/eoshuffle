@@ -42,8 +42,8 @@ module.exports = async function (opts = {}) {
   const _compileContract = (cmd, dir) => {
     return new Promise ((resolve, reject) => {
       const pathName = path.basename (dir);
-      logger.debug = `Running: ${cmd}`;
-      shelljs.exec (cmd, {silent: true}, (code, stdout, stderr) => {
+      logger.info = `Running: ${cmd}`;
+      shelljs.exec (cmd, {silent: false}, (code, stdout, stderr) => {
         if (code !== 0) {
           return reject (stderr);
         }
@@ -65,44 +65,31 @@ module.exports = async function (opts = {}) {
     return _compileContract (abiCommand, dir);
   };
 
-  // const compileWast = async (dir, eosiocpp) => {
-  //   const pathName = path.basename (dir);
-  //   const inputDir = path.join (dirs.contractDir, pathName);
-  //   const inputFile = path.join (inputDir, `${pathName}.cpp`);
-  //   const outputDir = path.join (dirs.buildDir, pathName);
-  //   const outputFile = path.join (outputDir, `${pathName}.wast`);
-  //   fs.mkdirpSync (outputDir);
-  //
-  //   const wastCmd = `${eosiocpp} -o ${outputFile} ${inputFile}`;
-  //   console.log('wastCmd:', wastCmd);
-  //   return _compileContract (wastCmd, dir);
-  // };
-
-  const compileWast = async (dir, eosiocpp) => {
+  const compileWast = async (dir) => {
     const pathName = path.basename (dir);
     const inputDir = path.join (dirs.contractDir, pathName);
     const inputFile = path.join (inputDir, `${pathName}.cpp`);
     const outputDir = path.join (dirs.buildDir, pathName);
-    const outputFile = path.join (outputDir, `${pathName}.wast`);
+    const outputFile = path.join (outputDir, `${pathName}.wasm`);
     fs.mkdirpSync (outputDir);
 
-    const wastCmd = `${eosiocpp} -o ${outputFile} ${inputFile}`;
-    console.log('wastCmd:', wastCmd);
+    // const wastCmd = `${eosiocpp} -o ${outputFile} ${inputFile}`;
+    const wastCmd = `clang++ ${inputFile} -ObjC++ --compile --target=wasm32-unknown-unknown-wasm --optimize=3 --output ${outputFile}`;
     return _compileContract (wastCmd, dir);
   };
 
   this.compile = async dir => {
-    const eosiocpp = opts.eosiocpp || shelljs.which ('eosiocpp');
-    console.log('eosiocpp ===', eosiocpp);
-    if (!eosiocpp) {
-      logger.info (
-        `Sorry, this script requires eosiocpp. Either pass it as an option using the flag or add it to your $PATH and try again.`
-      );
-      shell.exit (1);
-      reject ();
-    }
+    // const eosiocpp = opts.eosiocpp || shelljs.which ('eosiocpp');
+    // console.log('eosiocpp ===', eosiocpp);
+    // if (!eosiocpp) {
+    //   logger.info (
+    //     `Sorry, this script requires eosiocpp. Either pass it as an option using the flag or add it to your $PATH and try again.`
+    //   );
+    //   shell.exit (1);
+    //   reject ();
+    // }
 
-    await compileWast (dir, eosiocpp);
+    await compileWast (dir);
     await compileAbi (dir, eosiocpp);
     logger.info ('Complete');
   };
