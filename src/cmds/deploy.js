@@ -4,7 +4,7 @@ const deployer = require ('../deployer');
 
 const deploy = async function (argv) {
   deployer (argv).then (async deployer => {
-    await deployer.deploy ('coin');
+    await deployer.deploy (name);
   });
 };
 
